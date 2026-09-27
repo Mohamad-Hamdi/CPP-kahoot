@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ROS 2 — Kahoot Live | T-Racers MEC</title>
+<title>C++ — Kahoot Live | T-Racers MEC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -84,6 +84,17 @@
   .q-progress{ font-family:var(--mono); font-size:18px; opacity:.9; font-weight:700; }
   .timer-ring{ width:74px; height:74px; border-radius:50%; background:conic-gradient(#fff var(--pct,100%), rgba(255,255,255,.22) 0); display:flex; align-items:center; justify-content:center; }
   .timer-ring span{ width:60px; height:60px; border-radius:50%; background:var(--red); display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--mono); font-weight:700; font-size:22px; }
+  /* Pinned to the right edge of the viewport (not inside the scrolling
+     q-wrap) so it's always visible even on a long question with a big
+     code block, instead of scrolling out of view at the top. */
+  .timer-ring-fixed{ position:fixed; right:24px; top:50%; transform:translateY(-50%); z-index:60; }
+  .timer-ring-fixed .timer-ring{ width:96px; height:96px; box-shadow:0 14px 30px rgba(0,0,0,.35); }
+  .timer-ring-fixed .timer-ring span{ width:80px; height:80px; font-size:28px; }
+  @media (max-width:640px){
+    .timer-ring-fixed{ right:12px; }
+    .timer-ring-fixed .timer-ring{ width:68px; height:68px; }
+    .timer-ring-fixed .timer-ring span{ width:56px; height:56px; font-size:20px; }
+  }
   .q-card-host{ background:#fff; border-radius:26px; padding:36px 38px; margin-bottom:20px; box-shadow:0 24px 60px rgba(10,0,40,.35); }
   .q-topic{ font-family:var(--mono); font-size:14px; font-weight:700; color:#fff; background:var(--purple-2); border-radius:8px; padding:5px 12px; display:inline-block; margin-bottom:14px;}
   .q-card-host .q-text{ font-size:30px; font-weight:800; line-height:1.5; }
@@ -162,8 +173,8 @@
   .podium-slot.show{ animation:podiumPop .65s cubic-bezier(.2,1.4,.4,1) forwards; }
   @keyframes podiumPop{ 0%{ opacity:0; transform:translateY(40px) scale(.8);} 60%{ opacity:1; transform:translateY(-8px) scale(1.05);} 100%{ opacity:1; transform:translateY(0) scale(1);} }
   .podium-slot .medal{ font-size:44px; margin-bottom:8px; filter:drop-shadow(0 6px 14px rgba(0,0,0,.4)); }
-  .podium-slot .p-name{ font-weight:800; font-size:19px; margin-bottom:6px; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .podium-slot .p-score{ font-family:var(--mono); font-weight:700; font-size:16px; opacity:.9; margin-bottom:10px; }
+  .podium-slot .p-name{ font-weight:800; font-size:19px; margin-bottom:6px; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .podium-slot .p-score{ font-family:var(--mono); font-weight:700; font-size:16px; opacity:.95; margin-bottom:10px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.5); }
   .podium-block{ width:100%; border-radius:14px 14px 0 0; display:flex; align-items:flex-start; justify-content:center; padding-top:14px; font-family:var(--mono); font-weight:900; color:#fff; box-shadow:0 -6px 20px rgba(0,0,0,.25); }
   .podium-slot.rank2 .podium-block{ height:130px; background:linear-gradient(180deg,#c9d3e0,#8fa0b8); font-size:34px; }
   .podium-slot.rank3 .podium-block{ height:96px; background:linear-gradient(180deg,#d99a5e,#a5652f); font-size:34px; }
@@ -230,7 +241,7 @@ const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAY
 
 /* ============================= DATA ============================= */
 const CPP_QUIZ_TITLE = "C++ — Variables to OOP: Quiz";
-const CPP_QUIZ_DATA = JSON.parse(`{"title": "C++ — Variables to OOP: Quiz", "questions": [{"id": 1, "difficulty": "easy", "code": "int age = 20, points = 300;\\nstring msg = age >= 18 ? \\"OK\\" : (points > 500 ? \\"Bonus\\" : \\"Not OK\\");\\ncout << msg;", "question": "What does this code print?", "options": ["OK", "Bonus", "Not OK", "Compile error"], "correctIndex": 0, "explanation": "age >= 18 is true, so the ternary immediately picks \\"OK\\". The nested condition on points is never evaluated because the outer condition already resolved to true."}, {"id": 2, "difficulty": "easy", "code": "int i = 0;\\nwhile (i < 5) { cout << i; i++; }\\ncout << \\" last=\\" << i;", "question": "What value does \\"last=\\" print?", "options": ["last=4", "last=5", "last=6", "last=0"], "correctIndex": 1, "explanation": "The loop body runs while i < 5 (printing 0,1,2,3,4), and i++ still executes on the final pass. By the time the loop exits, i has become 5, even though 5 itself was never printed inside the loop."}, {"id": 3, "difficulty": "easy", "code": "int table[2][3] = {{1,2,3},{4,5,6}};\\ncout << table[0][2] + table[1][0];", "question": "What is the output?", "options": ["3", "7", "9", "4"], "correctIndex": 1, "explanation": "table[0][2] is the last element of the first row (3), and table[1][0] is the first element of the second row (4). 3 + 4 = 7."}, {"id": 4, "difficulty": "easy-medium", "code": "", "question": "Why would you use a vector instead of a plain array?", "options": ["Vectors are always faster than arrays", "Vectors can resize at runtime, arrays cannot", "Vectors always use less memory", "Arrays cannot store numeric types"], "correctIndex": 1, "explanation": "That's the core trade-off taught in the deck: arrays are fixed-size and fast; vectors are dynamic (grow/shrink with push_back) at a small memory/speed cost."}, {"id": 5, "difficulty": "medium", "code": "vector<int> nums = {10, 20, 30, 40};\\nauto it = nums.begin();\\nadvance(it, 3);\\ncout << *it;", "question": "What is the output?", "options": ["10", "30", "40", "Error"], "correctIndex": 2, "explanation": "advance(it, 3) moves the iterator forward 3 positions from index 0 to index 3, which holds 40."}, {"id": 6, "difficulty": "medium", "code": "int num = 100;\\nint* ptr = &num;\\n*ptr = 200;\\ncout << num;", "question": "What is the output?", "options": ["100", "200", "An address value", "Compile error"], "correctIndex": 1, "explanation": "*ptr = 200 writes through the pointer directly into num's memory, changing its value to 200."}, {"id": 7, "difficulty": "medium", "code": "class Rectangle {\\nprivate:\\n    float length;\\npublic:\\n    void setLength(float l) { if (l >= 0) length = l; }\\n};", "question": "Why is length made private instead of public here?", "options": ["Private members use less memory", "So setLength() can validate input first", "private is required by C++ syntax", "It makes the class run faster"], "correctIndex": 1, "explanation": "This is data hiding/encapsulation: forcing changes through a controlled method lets setLength() reject invalid values (like a negative length) instead of allowing direct, unchecked access."}, {"id": 8, "difficulty": "medium", "code": "class Car {\\npublic:\\n    Car(string m) { cout << \\"Welcome \\" << m << \\"\\\\n\\"; }\\n    ~Car() { cout << \\"Good bye\\\\n\\"; }\\n};\\nint main() {\\n    Car myCar(\\"Toyota\\");\\n    cout << \\"Doing stuff\\\\n\\";\\n}", "question": "What is the output order?", "options": ["Good bye, Welcome, Doing stuff", "Welcome, Doing stuff, Good bye", "Doing stuff, Welcome, Good bye", "Welcome, Good bye, Doing stuff"], "correctIndex": 1, "explanation": "The constructor runs first (object creation), then the rest of main executes, and the destructor fires automatically once the object's lifetime ends."}, {"id": 9, "difficulty": "medium-hard", "code": "class Calculator {\\npublic:\\n    int add(int a, int b) { return a + b; }\\n    float add(float a, float b) { return a + b; }\\n};\\nCalculator c;\\ncout << c.add(2, 3);", "question": "Which version of add() runs?", "options": ["The float version runs", "The int version runs", "Ambiguous, won't compile", "Chosen randomly"], "correctIndex": 1, "explanation": "Method overloading is resolved at compile time by matching argument types to the closest signature. The literals 2 and 3 are int, so the int overload is chosen."}, {"id": 10, "difficulty": "hard", "code": "class Person {\\npublic:\\n    Person(string n) { cout << \\"Person:\\" << n; }\\n};\\nclass Student : public Person {\\npublic:\\n    Student(string n) : Person(n) { cout << \\",Student\\"; }\\n};\\nStudent s(\\"Ali\\");", "question": "What is the output?", "options": ["Student runs, then Person", "Person runs, then Student", "Compile error, no default constructor", "Both run at the same time"], "correctIndex": 1, "explanation": "The base class constructor (Person) always runs first. Since Person has no default constructor, Student must explicitly call it in its initializer list, as shown here, then the derived constructor body runs."}, {"id": 11, "difficulty": "hard", "code": "class Shape {\\npublic:\\n    virtual double GetArea() = 0;\\n};", "question": "Why can't you write \\"Shape s;\\" in main()?", "options": ["Shape has no constructor", "Shape has a pure virtual function", "Shape is missing a destructor", "This code actually compiles fine"], "correctIndex": 1, "explanation": "A class with at least one pure virtual function (= 0) is abstract by definition. C++ won't let you instantiate it directly since part of its behavior is undefined; you can only use it through a pointer/reference to a concrete derived class."}, {"id": 12, "difficulty": "hard", "code": "class Shape { public: virtual double GetArea(){ return 0; } };\\nclass Circle : public Shape { public: double GetArea() override { return 28.3; } };\\n\\nShape* s = new Circle();\\ncout << s->GetArea();", "question": "What is the output?", "options": ["0", "28.3", "Compile error", "Depends on compiler"], "correctIndex": 1, "explanation": "Because GetArea() is virtual, the call is resolved based on the actual object type at runtime (Circle), not the pointer's declared type (Shape*) — this is run-time polymorphism."}, {"id": 13, "difficulty": "hard", "code": "int x = 10, y = 0;\\ntry {\\n    if (y == 0) throw \\"division by zero\\";\\n    else cout << x / y;\\n}\\ncatch (const char* msg) { cout << msg; }\\ncout << \\"\\\\nProgram continues\\";", "question": "What happens when this code runs?", "options": ["Program crashes immediately", "Prints message, then continues", "Prints continues message only", "Compile error, can't throw string"], "correctIndex": 1, "explanation": "throw transfers control straight to the matching catch block instead of crashing. Once handled, execution resumes normally after the try/catch, so the next line still runs."}, {"id": 14, "difficulty": "hard", "code": "", "question": "Why does the \\"Object Approach\\" to state machines fix the \\"not centralized\\" problem that if/else if has?", "options": ["It uses fewer lines of code", "All changes go through one function", "Objects run faster than if/else", "It doesn't actually solve it"], "correctIndex": 1, "explanation": "In the object-based design, state is only ever changed by going through CheckState(), which always runs the correct callback. No code can bypass it and change the state variable directly, unlike a raw variable anyone can overwrite."}, {"id": 15, "difficulty": "hardest", "code": "", "question": "All 3 mission-selector solutions (switch, map, OOP) give the same output. So why is OOP still called the better design?", "options": ["OOP always runs faster", "OOP uses less memory", "OOP isolates each mission in its own class", "Switch/map can't handle 5 missions"], "correctIndex": 2, "explanation": "The deck's core lesson: all three give the same result, but differ in how well the design scales. Adding a 6th mission in OOP means adding one new isolated class, while switch/map require touching multiple existing functions or tables."}]}`);
+const CPP_QUIZ_DATA = JSON.parse(`{"title": "C++ — Variables to OOP: Quiz", "questions": [{"id": 1, "difficulty": "easy", "code": "int age = 20, points = 300;\\nstring msg = age >= 18 ? \\"OK\\" : (points > 500 ? \\"Bonus\\" : \\"Not OK\\");\\ncout << msg;", "question": "What does this code print?", "options": ["OK", "Bonus", "Not OK", "Compile error"], "correctIndex": 0, "explanation": "age >= 18 is true, so the ternary immediately picks \\"OK\\". The nested condition on points is never evaluated because the outer condition already resolved to true."}, {"id": 2, "difficulty": "easy", "code": "int i = 0;\\nwhile (i < 5) {\\n    cout << i;\\n    i++;\\n}\\ncout << \\" last=\\" << i;", "question": "What value does \\"last=\\" print?", "options": ["last=4", "last=5", "last=6", "last=0"], "correctIndex": 1, "explanation": "The loop body runs while i < 5 (printing 0,1,2,3,4), and i++ still executes on the final pass. By the time the loop exits, i has become 5, even though 5 itself was never printed inside the loop."}, {"id": 3, "difficulty": "easy", "code": "int table[2][3] = {\\n    {1, 2, 3},\\n    {4, 5, 6}\\n};\\ncout << table[0][2] + table[1][0];", "question": "What is the output?", "options": ["3", "7", "9", "4"], "correctIndex": 1, "explanation": "table[0][2] is the last element of the first row (3), and table[1][0] is the first element of the second row (4). 3 + 4 = 7."}, {"id": 4, "difficulty": "easy-medium", "code": "", "question": "Why would you use a vector instead of a plain array?", "options": ["Vectors are always faster than arrays", "Vectors can resize at runtime, arrays cannot", "Vectors always use less memory", "Arrays cannot store numeric types"], "correctIndex": 1, "explanation": "That's the core trade-off taught in the deck: arrays are fixed-size and fast; vectors are dynamic (grow/shrink with push_back) at a small memory/speed cost."}, {"id": 5, "difficulty": "medium", "code": "vector<int> nums = {10, 20, 30, 40};\\nauto it = nums.begin();\\nadvance(it, 3);\\ncout << *it;", "question": "What is the output?", "options": ["10", "30", "40", "Error"], "correctIndex": 2, "explanation": "advance(it, 3) moves the iterator forward 3 positions from index 0 to index 3, which holds 40."}, {"id": 6, "difficulty": "medium", "code": "int num = 100;\\nint* ptr = &num;\\n*ptr = 200;\\ncout << num;", "question": "What is the output?", "options": ["100", "200", "An address value", "Compile error"], "correctIndex": 1, "explanation": "*ptr = 200 writes through the pointer directly into num's memory, changing its value to 200."}, {"id": 7, "difficulty": "medium", "code": "class Rectangle {\\nprivate:\\n    float length;\\npublic:\\n    void setLength(float l) {\\n        if (l >= 0) length = l;\\n    }\\n};", "question": "Why is length made private instead of public here?", "options": ["Private members use less memory", "So setLength() can validate input first", "private is required by C++ syntax", "It makes the class run faster"], "correctIndex": 1, "explanation": "This is data hiding/encapsulation: forcing changes through a controlled method lets setLength() reject invalid values (like a negative length) instead of allowing direct, unchecked access."}, {"id": 8, "difficulty": "medium", "code": "class Car {\\npublic:\\n    Car(string m) {\\n        cout << \\"Welcome \\" << m << \\"\\\\n\\";\\n    }\\n    ~Car() {\\n        cout << \\"Good bye\\\\n\\";\\n    }\\n};\\n\\nint main() {\\n    Car myCar(\\"Toyota\\");\\n    cout << \\"Doing stuff\\\\n\\";\\n}", "question": "What is the output order?", "options": ["Good bye, Welcome, Doing stuff", "Welcome, Doing stuff, Good bye", "Doing stuff, Welcome, Good bye", "Welcome, Good bye, Doing stuff"], "correctIndex": 1, "explanation": "The constructor runs first (object creation), then the rest of main executes, and the destructor fires automatically once the object's lifetime ends."}, {"id": 9, "difficulty": "medium-hard", "code": "class Calculator {\\npublic:\\n    int add(int a, int b) {\\n        return a + b;\\n    }\\n    float add(float a, float b) {\\n        return a + b;\\n    }\\n};\\n\\nCalculator c;\\ncout << c.add(2, 3);", "question": "Which version of add() runs?", "options": ["The float version runs", "The int version runs", "Ambiguous, won't compile", "Chosen randomly"], "correctIndex": 1, "explanation": "Method overloading is resolved at compile time by matching argument types to the closest signature. The literals 2 and 3 are int, so the int overload is chosen."}, {"id": 10, "difficulty": "hard", "code": "class Person {\\npublic:\\n    Person(string n) {\\n        cout << \\"Person:\\" << n;\\n    }\\n};\\n\\nclass Student : public Person {\\npublic:\\n    Student(string n) : Person(n) {\\n        cout << \\",Student\\";\\n    }\\n};\\n\\nStudent s(\\"Ali\\");", "question": "What is the output?", "options": ["Student runs, then Person", "Person runs, then Student", "Compile error, no default constructor", "Both run at the same time"], "correctIndex": 1, "explanation": "The base class constructor (Person) always runs first. Since Person has no default constructor, Student must explicitly call it in its initializer list, as shown here, then the derived constructor body runs."}, {"id": 11, "difficulty": "hard", "code": "class Shape {\\npublic:\\n    virtual double GetArea() = 0;\\n};", "question": "Why can't you write \\"Shape s;\\" in main()?", "options": ["Shape has no constructor", "Shape has a pure virtual function", "Shape is missing a destructor", "This code actually compiles fine"], "correctIndex": 1, "explanation": "A class with at least one pure virtual function (= 0) is abstract by definition. C++ won't let you instantiate it directly since part of its behavior is undefined; you can only use it through a pointer/reference to a concrete derived class."}, {"id": 12, "difficulty": "hard", "code": "class Shape {\\npublic:\\n    virtual double GetArea() {\\n        return 0;\\n    }\\n};\\n\\nclass Circle : public Shape {\\npublic:\\n    double GetArea() override {\\n        return 28.3;\\n    }\\n};\\n\\nShape* s = new Circle();\\ncout << s->GetArea();", "question": "What is the output?", "options": ["0", "28.3", "Compile error", "Depends on compiler"], "correctIndex": 1, "explanation": "Because GetArea() is virtual, the call is resolved based on the actual object type at runtime (Circle), not the pointer's declared type (Shape*) — this is run-time polymorphism."}, {"id": 13, "difficulty": "hard", "code": "int x = 10, y = 0;\\ntry {\\n    if (y == 0) {\\n        throw \\"division by zero\\";\\n    } else {\\n        cout << x / y;\\n    }\\n} catch (const char* msg) {\\n    cout << msg;\\n}\\ncout << \\"\\\\nProgram continues\\";", "question": "What happens when this code runs?", "options": ["Program crashes immediately", "Prints message, then continues", "Prints continues message only", "Compile error, can't throw string"], "correctIndex": 1, "explanation": "throw transfers control straight to the matching catch block instead of crashing. Once handled, execution resumes normally after the try/catch, so the next line still runs."}, {"id": 14, "difficulty": "hard", "code": "", "question": "Why does the \\"Object Approach\\" to state machines fix the \\"not centralized\\" problem that if/else if has?", "options": ["It uses fewer lines of code", "All changes go through one function", "Objects run faster than if/else", "It doesn't actually solve it"], "correctIndex": 1, "explanation": "In the object-based design, state is only ever changed by going through CheckState(), which always runs the correct callback. No code can bypass it and change the state variable directly, unlike a raw variable anyone can overwrite."}, {"id": 15, "difficulty": "hardest", "code": "", "question": "All 3 mission-selector solutions (switch, map, OOP) give the same output. So why is OOP still called the better design?", "options": ["OOP always runs faster", "OOP uses less memory", "OOP isolates each mission in its own class", "Switch/map can't handle 5 missions"], "correctIndex": 2, "explanation": "The deck's core lesson: all three give the same result, but differ in how well the design scales. Adding a 6th mission in OOP means adding one new isolated class, while switch/map require touching multiple existing functions or tables."}]}`);
 const QUESTIONS = CPP_QUIZ_DATA.questions.map(q => ({
   topic: CPP_QUIZ_TITLE,
   // escapeHtml (defined later, but hoisted) so stray < > & in the source
@@ -258,7 +269,19 @@ function computeQuestionDuration(q){
   // and a long one (~260+ chars total) sits near the max.
   const MIN_LEN = 60, MAX_LEN = 260;
   const ratio = Math.min(1, Math.max(0, (textLen - MIN_LEN) / (MAX_LEN - MIN_LEN)));
-  const ms = QUESTION_MS_MIN + ratio * (QUESTION_MS_MAX - QUESTION_MS_MIN);
+  let ms = QUESTION_MS_MIN + ratio * (QUESTION_MS_MAX - QUESTION_MS_MIN);
+  // A question with a code snippet needs real extra reading time on top
+  // of the question/options time above — tracing through a short class
+  // or a loop takes people much longer than reading an equivalent amount
+  // of plain sentence text. Scale the bonus by how long the snippet is
+  // (a one-liner vs. a 10-line class), so a small snippet doesn't get
+  // the full bonus and a long one doesn't get short-changed.
+  if(q.code){
+    const CODE_LEN_MIN = 40, CODE_LEN_MAX = 300;
+    const CODE_MS_MIN = 10000, CODE_MS_MAX = 20000;
+    const codeRatio = Math.min(1, Math.max(0, (q.code.length - CODE_LEN_MIN) / (CODE_LEN_MAX - CODE_LEN_MIN)));
+    ms += CODE_MS_MIN + codeRatio * (CODE_MS_MAX - CODE_MS_MIN);
+  }
   return Math.round(ms/1000)*1000; // round to nearest whole second
 }
 /* kept for any code path that still wants a generic fallback duration */
@@ -306,6 +329,27 @@ function fbInit(){
   fbDb = firebase.database();
   return fbDb;
 }
+/* ---------- Synced clock across host + all player devices ----------
+   Root cause of "timer runs out on the phone before the host screen /
+   projector even finishes counting down": startedAt is written using
+   the HOST device's Date.now(), then every player subtracts THEIR OWN
+   device's Date.now() from it. If a phone's clock is even a few
+   seconds off from the host laptop's clock (very common — phones and
+   laptops rarely have perfectly synced clocks), the phone thinks more
+   time has passed than actually has, so its countdown (and the forced
+   "time's up, submitting no answer" flow) fires early.
+   Fix: every device asks Firebase for the difference between the
+   server's clock and its own (a built-in feature: '.info/serverTimeOffset'),
+   and uses serverNow() instead of Date.now() for anything timer-related.
+   Now every device — host and every phone — computes remaining time
+   against the SAME server clock, so they all run out together. */
+let SERVER_TIME_OFFSET = 0;
+function startServerTimeSync(){
+  try{ fbInit().ref('.info/serverTimeOffset').on('value', snap=>{ SERVER_TIME_OFFSET = snap.val() || 0; }); }
+  catch(e){}
+}
+function serverNow(){ return Date.now() + SERVER_TIME_OFFSET; }
+
 async function fbGet(path){
   try{
     const snap = await fbInit().ref(path).get();
@@ -384,6 +428,7 @@ function renderNotConfigured(){
 /* ============================= BOOT / ROUTING (no role picker — automatic) ============================= */
 async function boot(){
   if(!configured()){ S.screen='not-configured'; render(); return; }
+  startServerTimeSync();
 
   const params = new URLSearchParams(location.search);
 
@@ -424,11 +469,11 @@ function renderHostLobby(){
   clearListeners();
   const link = `${location.origin}${location.pathname}?play=1&code=${S.roomCode}`;
   app.innerHTML = `
-    <div class="topbar"><div class="brand"><img class="brand-logo" src="${LOGO_DATA_URI}" alt="T-Racers MEC logo">T-Racers MEC<span>ROS 2 Live Quiz</span></div><div class="room-pill">Room ${S.roomCode}</div></div>
+    <div class="topbar"><div class="brand"><img class="brand-logo" src="${LOGO_DATA_URI}" alt="T-Racers MEC logo">T-Racers MEC<span>C++ Live Quiz</span></div><div class="room-pill">Room ${S.roomCode}</div></div>
     <div class="center-wrap">
       <div class="lobby-wrap">
         <div class="lobby-logo-wrap">
-          <div class="lobby-title">ROS 2 — Live Quiz</div>
+          <div class="lobby-title">C++ — Live Quiz</div>
         </div>
         <div class="qr-card">
           <b>Scan to join</b>
@@ -453,7 +498,7 @@ function renderHostLobby(){
     // up to a few hundred ms, which reads as "time's already up" and
     // reveals the question instantly. Refreshing "fixed" it before only
     // because a reload re-fetches meta fresh with fbGet() before render.
-    const newMeta = { status:'question', qIndex:0, startedAt:Date.now(), duration:computeQuestionDuration(QUESTIONS[0]), revealed:false };
+    const newMeta = { status:'question', qIndex:0, startedAt:serverNow(), duration:computeQuestionDuration(QUESTIONS[0]), revealed:false };
     S.meta = newMeta;
     await fbSet(metaPath(S.roomCode), newMeta);
     S.qIndex = 0; S.screen='host-question'; render();
@@ -474,7 +519,7 @@ function renderHostLobby(){
 
 /* ---- shared: topbar with mid-game restart control ---- */
 function topbarWithRestart(){
-  return `<div class="topbar"><div class="brand"><img class="brand-logo" src="${LOGO_DATA_URI}" alt="T-Racers MEC logo">T-Racers MEC<span>ROS 2 Live Quiz</span></div>
+  return `<div class="topbar"><div class="brand"><img class="brand-logo" src="${LOGO_DATA_URI}" alt="T-Racers MEC logo">T-Racers MEC<span>C++ Live Quiz</span></div>
     <div class="topbar-right"><button class="restart-mini-btn" id="midRestartBtn">🔄 Restart</button><div class="room-pill">Room ${S.roomCode}</div></div>
   </div>`;
 }
@@ -494,11 +539,13 @@ function renderHostQuestion(){
   const q = QUESTIONS[S.qIndex];
   app.innerHTML = `
     ${topbarWithRestart()}
+    <div class="timer-ring-fixed">
+      <div class="timer-ring" id="timerRing"><span id="timerNum">${Math.round(computeQuestionDuration(q)/1000)}</span></div>
+    </div>
     <div class="center-wrap">
       <div class="q-wrap">
         <div class="q-head">
           <div class="q-progress">Question ${S.qIndex+1} / ${QUESTIONS.length}</div>
-          <div class="timer-ring" id="timerRing"><span id="timerNum">${Math.round(computeQuestionDuration(q)/1000)}</span></div>
         </div>
         <div class="q-card-host">
           <span class="q-topic">${q.topic}</span>
@@ -522,7 +569,7 @@ function renderHostQuestion(){
   let localTimer = setInterval(()=>{
     if(S.screen!=='host-question' || !S.meta){ clearInterval(localTimer); return; }
     const m = S.meta;
-    const remaining = Math.max(0, m.duration - (Date.now()-m.startedAt));
+    const remaining = Math.max(0, m.duration - (serverNow()-m.startedAt));
     const pct = Math.round((remaining/m.duration)*100)+'%';
     const ring = document.getElementById('timerRing');
     if(ring){ ring.style.setProperty('--pct', pct); document.getElementById('timerNum').textContent = Math.ceil(remaining/1000); }
@@ -646,7 +693,7 @@ function renderHostLeaderboard(){
     // Same fix as Start Game: set S.meta locally right away instead of
     // waiting for the fbListen round-trip, which is what caused the
     // "timer suddenly shows 0" bug on some question transitions.
-    const newMeta = { status:'question', qIndex:nextIdx, startedAt:Date.now(), duration:computeQuestionDuration(QUESTIONS[nextIdx]), revealed:false };
+    const newMeta = { status:'question', qIndex:nextIdx, startedAt:serverNow(), duration:computeQuestionDuration(QUESTIONS[nextIdx]), revealed:false };
     S.meta = newMeta;
     await fbSet(metaPath(S.roomCode), newMeta);
     S.qIndex = nextIdx; S.screen='host-question'; render();
@@ -673,7 +720,7 @@ async function loadLeaderboard(){
 function renderHostEnd(){
   clearListeners();
   app.innerHTML = `
-    <div class="topbar"><div class="brand"><img class="brand-logo" src="${LOGO_DATA_URI}" alt="T-Racers MEC logo">T-Racers MEC<span>ROS 2 Live Quiz</span></div><div class="room-pill">Room ${S.roomCode}</div></div>
+    <div class="topbar"><div class="brand"><img class="brand-logo" src="${LOGO_DATA_URI}" alt="T-Racers MEC logo">T-Racers MEC<span>C++ Live Quiz</span></div><div class="room-pill">Room ${S.roomCode}</div></div>
     <div class="center-wrap">
       <div class="lb-wrap podium-wrap">
         <div class="lb-title">🎉 Final Results</div>
@@ -906,7 +953,7 @@ function renderPlayerQuestion(){
     btn.onclick = async ()=>{
       document.querySelectorAll('.shape-btn').forEach(b=> b.disabled = true);
       const i = Number(btn.dataset.i);
-      const elapsed = Date.now() - (S.meta.startedAt||Date.now());
+      const elapsed = serverNow() - (S.meta.startedAt||serverNow());
       await fbSet(answerPath(S.roomCode, S.qIndex, S.playerId), { choice:i, time: elapsed });
       S.answeredQIndex = S.qIndex;
       S.screen = 'player-answered-wait'; render();
@@ -916,7 +963,7 @@ function renderPlayerQuestion(){
   // already have from the live listener — no network call in this loop.
   let localTimer = setInterval(()=>{
     if(S.screen!=='player-question' || !S.meta){ clearInterval(localTimer); return; }
-    const remaining = Math.max(0, S.meta.duration - (Date.now()-S.meta.startedAt));
+    const remaining = Math.max(0, S.meta.duration - (serverNow()-S.meta.startedAt));
     const pct = Math.round((remaining/S.meta.duration)*100);
     const fill = document.getElementById('miniFill');
     if(fill) fill.style.width = pct+'%';
