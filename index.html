@@ -279,25 +279,24 @@ const QUESTION_MS_MAX = 25000; // longest question/answers -> 25s
 /* Duration scales between MIN and MAX based on how much text the player
    has to read (question text + all 4 options). Longer text -> more time. */
 function computeQuestionDuration(q){
+  // Reading-time model: a fixed "think + tap" base, plus time proportional
+  // to how much there actually is to read. Short snippets no longer get a
+  // flat code bonus (that made even a 3-line snippet run ~27s); the code
+  // time now scales with the number of lines and characters, so a 4-line
+  // snippet is ~16s while a 15-line class is ~35s.
+  const BASE_S = 8;              // thinking + tapping an answer
+  const S_PER_TEXT_CHAR = 0.05;  // question text + all 4 options
+  const S_PER_CODE_LINE = 1.2;   // tracing each line of code
+  const S_PER_CODE_CHAR = 0.02;
+  const MIN_S = 12, MAX_S = 35;
   const textLen = (q.text||'').length + (q.options||[]).reduce((sum,o)=> sum + (o||'').length, 0);
-  // Calibrated so a short question (~60 chars total) sits near the min,
-  // and a long one (~260+ chars total) sits near the max.
-  const MIN_LEN = 60, MAX_LEN = 260;
-  const ratio = Math.min(1, Math.max(0, (textLen - MIN_LEN) / (MAX_LEN - MIN_LEN)));
-  let ms = QUESTION_MS_MIN + ratio * (QUESTION_MS_MAX - QUESTION_MS_MIN);
-  // A question with a code snippet needs real extra reading time on top
-  // of the question/options time above — tracing through a short class
-  // or a loop takes people much longer than reading an equivalent amount
-  // of plain sentence text. Scale the bonus by how long the snippet is
-  // (a one-liner vs. a 10-line class), so a small snippet doesn't get
-  // the full bonus and a long one doesn't get short-changed.
+  let sec = BASE_S + textLen * S_PER_TEXT_CHAR;
   if(q.code){
-    const CODE_LEN_MIN = 40, CODE_LEN_MAX = 300;
-    const CODE_MS_MIN = 10000, CODE_MS_MAX = 20000;
-    const codeRatio = Math.min(1, Math.max(0, (q.code.length - CODE_LEN_MIN) / (CODE_LEN_MAX - CODE_LEN_MIN)));
-    ms += CODE_MS_MIN + codeRatio * (CODE_MS_MAX - CODE_MS_MIN);
+    const lines = q.code.split('\n').filter(l=> l.trim()).length;
+    sec += lines * S_PER_CODE_LINE + q.code.length * S_PER_CODE_CHAR;
   }
-  return Math.round(ms/1000)*1000; // round to nearest whole second
+  sec = Math.min(MAX_S, Math.max(MIN_S, sec));
+  return Math.round(sec) * 1000;
 }
 /* kept for any code path that still wants a generic fallback duration */
 const QUESTION_MS = QUESTION_MS_MIN;
